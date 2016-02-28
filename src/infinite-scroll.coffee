@@ -72,7 +72,7 @@ mod.directive 'infiniteScroll', ['$rootScope', '$window', '$interval', 'THROTTLE
             container.scrollTop(container.scrollTop() - count * lineHeight)
           )
         else
-          scope.infiniteScrollReverse()
+          scope.infiniteScroll()
 
       if shouldScroll
         checkWhenEnabled = true
