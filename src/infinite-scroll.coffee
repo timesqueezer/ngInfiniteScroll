@@ -251,19 +251,19 @@ mod.directive 'infiniteScrollReverse', ['$rootScope', '$window', '$interval', 'T
     # called in order to throttle the function call.
     handler = ->
       if container == windowElement
-        containerBottom = height(container) + pageYOffset(container[0].document.documentElement)
-        elementBottom = offsetTop(elem) + height(elem)
+        containerTop = pageYOffset(container[0].document.documentElement)
+        elementTop = offsetTop(elem)
       else
-        containerBottom = height(container)
+        containerTop = 0
         containerTopOffset = 0
         if offsetTop(container) != undefined
           containerTopOffset = offsetTop(container)
-        elementBottom = offsetTop(elem) - containerTopOffset + height(elem)
+        elementTop = offsetTop(elem) - containerTopOffset
 
       if(useDocumentBottom)
-        elementBottom = height((elem[0].ownerDocument || elem[0].document).documentElement)
+        elementTop = 0
 
-      remaining = elementBottom - containerBottom
+      remaining = containerTop - elementTop
       shouldScroll = remaining <= height(container) * scrollDistance + 1
 
       if shouldScroll
