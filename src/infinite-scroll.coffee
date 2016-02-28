@@ -9,8 +9,10 @@ mod.directive 'infiniteScroll', ['$rootScope', '$window', '$interval', 'THROTTLE
     infiniteScrollContainer: '='
     infiniteScrollDistance: '='
     infiniteScrollDisabled: '='
-    infiniteScrollUseDocumentBottom: '=',
+    infiniteScrollUseDocumentBottom: '='
     infiniteScrollListenForEvent: '@'
+    infiniteScrollLineHeight: '='
+    infiniteScrollCallback: '='
 
   link: (scope, elem, attrs) ->
     windowElement = angular.element($window)
@@ -23,6 +25,7 @@ mod.directive 'infiniteScroll', ['$rootScope', '$window', '$interval', 'THROTTLE
     useDocumentBottom = false
     unregisterEventListener = null
     checkInterval = false
+    lineHeight = 0
 
     height = (elem) ->
       elem = elem[0] or elem
@@ -63,14 +66,22 @@ mod.directive 'infiniteScroll', ['$rootScope', '$window', '$interval', 'THROTTLE
       remaining = elementBottom - containerBottom
       shouldScroll = remaining <= height(container) * scrollDistance + 1
 
+      load = ->
+        if (attrs.infiniteScrollCallback?)
+          scope.infiniteScrollCallback((count)->
+            container.scrollTop(container.scrollTop() - count * lineHeight)
+          )
+        else
+          scope.infiniteScrollReverse()
+
       if shouldScroll
         checkWhenEnabled = true
 
         if scrollEnabled
           if scope.$$phase || $rootScope.$$phase
-            scope.infiniteScroll()
+            load()
           else
-            scope.$apply(scope.infiniteScroll)
+            scope.$apply load
       else
         if checkInterval then $interval.cancel checkInterval
         checkWhenEnabled = false
@@ -132,6 +143,8 @@ mod.directive 'infiniteScroll', ['$rootScope', '$window', '$interval', 'THROTTLE
       if scrollEnabled && checkWhenEnabled
         checkWhenEnabled = false
         handler()
+
+    lineHeight = attrs.infiniteScrollLineHeight if attrs.infiniteScrollLineHeight
 
     scope.$watch 'infiniteScrollDisabled', handleInfiniteScrollDisabled
     # If I don't explicitly call the handler here, tests fail. Don't know why yet.
@@ -214,6 +227,8 @@ mod.directive 'infiniteScrollReverse', ['$rootScope', '$window', '$interval', 'T
     infiniteScrollDisabled: '='
     infiniteScrollUseDocumentBottom: '=',
     infiniteScrollListenForEvent: '@'
+    infiniteScrollLineHeight: '='
+    infiniteScrollCallback: '='
 
   link: (scope, elem, attrs) ->
     windowElement = angular.element($window)
@@ -226,6 +241,7 @@ mod.directive 'infiniteScrollReverse', ['$rootScope', '$window', '$interval', 'T
     useDocumentBottom = false
     unregisterEventListener = null
     checkInterval = false
+    lineHeight = 0
 
     height = (elem) ->
       elem = elem[0] or elem
@@ -265,15 +281,23 @@ mod.directive 'infiniteScrollReverse', ['$rootScope', '$window', '$interval', 'T
 
       remaining = containerTop - elementTop
       shouldScroll = remaining <= height(container) * scrollDistance + 1
+      load = ->
+        if (attrs.infiniteScrollCallback?)
+          scope.infiniteScrollCallback((count)->
+
+            container.scrollTop(container.scrollTop() + count * lineHeight)
+          )
+        else
+          scope.infiniteScrollReverse()
 
       if shouldScroll
         checkWhenEnabled = true
 
         if scrollEnabled
           if scope.$$phase || $rootScope.$$phase
-            scope.infiniteScrollReverse()
+            load()
           else
-            scope.$apply(scope.infiniteScrollReverse)
+            scope.$apply load
       else
         if checkInterval then $interval.cancel checkInterval
         checkWhenEnabled = false
@@ -335,6 +359,8 @@ mod.directive 'infiniteScrollReverse', ['$rootScope', '$window', '$interval', 'T
       if scrollEnabled && checkWhenEnabled
         checkWhenEnabled = false
         handler()
+
+    lineHeight = attrs.infiniteScrollLineHeight if attrs.infiniteScrollLineHeight
 
     scope.$watch 'infiniteScrollDisabled', handleInfiniteScrollDisabled
     # If I don't explicitly call the handler here, tests fail. Don't know why yet.
