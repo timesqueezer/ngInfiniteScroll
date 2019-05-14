@@ -66,7 +66,7 @@ mod.directive('infiniteScroll', [
               containerTopOffset = offsetTop(container);
             }
             if (relativeContainer) {
-              elementBottom = elem[0].getBoundingClientRect().top - elem[0].scrollTop - containerTopOffset + Math.floor(elem[0].scrollHeight / height(elem));
+              elementBottom = elem[0].getBoundingClientRect().top - elem[0].scrollTop - containerTopOffset + elem[0].scrollHeight;
             } else {
               elementBottom = offsetTop(elem) - containerTopOffset + height(elem);
             }
