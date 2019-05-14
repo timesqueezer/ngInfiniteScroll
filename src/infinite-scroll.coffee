@@ -13,6 +13,7 @@ mod.directive 'infiniteScroll', ['$rootScope', '$window', '$interval', 'THROTTLE
     infiniteScrollListenForEvent: '@'
     infiniteScrollLineHeight: '='
     infiniteScrollCallback: '='
+    infiniteScrollRelativeContainer: '='
 
   link: (scope, elem, attrs) ->
     windowElement = angular.element($window)
@@ -26,6 +27,7 @@ mod.directive 'infiniteScroll', ['$rootScope', '$window', '$interval', 'THROTTLE
     unregisterEventListener = null
     checkInterval = false
     lineHeight = 0
+    relativeContainer = false
 
     height = (elem) ->
       elem = elem[0] or elem
@@ -58,7 +60,11 @@ mod.directive 'infiniteScroll', ['$rootScope', '$window', '$interval', 'THROTTLE
         containerTopOffset = 0
         if offsetTop(container) != undefined
           containerTopOffset = offsetTop(container)
-        elementBottom = offsetTop(elem) - containerTopOffset + height(elem)
+
+        if relativeContainer
+          elementBottom = elem[0].getBoundingClientRect().top - elem[0].scrollTop - containerTopOffset + elem[0].scrollHeight
+        else
+          elementBottom = offsetTop(elem) - containerTopOffset + height(elem)
 
       if(useDocumentBottom)
         elementBottom = height((elem[0].ownerDocument || elem[0].document).documentElement)
@@ -158,6 +164,13 @@ mod.directive 'infiniteScroll', ['$rootScope', '$window', '$interval', 'THROTTLE
 
     scope.$watch 'infiniteScrollUseDocumentBottom', handleInfiniteScrollUseDocumentBottom
     handleInfiniteScrollUseDocumentBottom scope.infiniteScrollUseDocumentBottom
+
+    # use a different method for calculating scrollHeight and height if container has postion:relative
+    handleInfiniteScrollRelativeContainer = (v) ->
+      relativeContainer = v
+
+    scope.$watch 'infiniteScrollRelativeContainer', handleInfiniteScrollRelativeContainer
+    handleInfiniteScrollRelativeContainer scope.infiniteScrollRelativeContainer
 
     # infinite-scroll-container sets the container which we want to be
     # infinte scrolled, instead of the whole window. Must be an

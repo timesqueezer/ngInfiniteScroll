@@ -1,4 +1,4 @@
-/* ng-infinite-scroll - v1.2.1 - 2016-03-19 */
+/* ng-infinite-scroll - v1.2.1 - 2019-05-14 */
 var mod;
 
 mod = angular.module('infinite-scroll', []);
@@ -16,10 +16,11 @@ mod.directive('infiniteScroll', [
         infiniteScrollUseDocumentBottom: '=',
         infiniteScrollListenForEvent: '@',
         infiniteScrollLineHeight: '=',
-        infiniteScrollCallback: '='
+        infiniteScrollCallback: '=',
+        infiniteScrollRelativeContainer: '='
       },
       link: function(scope, elem, attrs) {
-        var changeContainer, checkInterval, checkWhenEnabled, container, handleInfiniteScrollContainer, handleInfiniteScrollDisabled, handleInfiniteScrollDistance, handleInfiniteScrollUseDocumentBottom, handler, height, immediateCheck, lineHeight, offsetTop, pageYOffset, scrollDistance, scrollEnabled, throttle, unregisterEventListener, useDocumentBottom, windowElement;
+        var changeContainer, checkInterval, checkWhenEnabled, container, handleInfiniteScrollContainer, handleInfiniteScrollDisabled, handleInfiniteScrollDistance, handleInfiniteScrollRelativeContainer, handleInfiniteScrollUseDocumentBottom, handler, height, immediateCheck, lineHeight, offsetTop, pageYOffset, relativeContainer, scrollDistance, scrollEnabled, throttle, unregisterEventListener, useDocumentBottom, windowElement;
         windowElement = angular.element($window);
         scrollDistance = null;
         scrollEnabled = null;
@@ -30,6 +31,7 @@ mod.directive('infiniteScroll', [
         unregisterEventListener = null;
         checkInterval = false;
         lineHeight = 0;
+        relativeContainer = false;
         height = function(elem) {
           elem = elem[0] || elem;
           if (isNaN(elem.offsetHeight)) {
@@ -63,7 +65,11 @@ mod.directive('infiniteScroll', [
             if (offsetTop(container) !== void 0) {
               containerTopOffset = offsetTop(container);
             }
-            elementBottom = offsetTop(elem) - containerTopOffset + height(elem);
+            if (relativeContainer) {
+              elementBottom = elem[0].getBoundingClientRect().top - elem[0].scrollTop - containerTopOffset + Math.floor(elem[0].scrollHeight / height(elem));
+            } else {
+              elementBottom = offsetTop(elem) - containerTopOffset + height(elem);
+            }
           }
           if (useDocumentBottom) {
             elementBottom = height((elem[0].ownerDocument || elem[0].document).documentElement);
@@ -153,6 +159,11 @@ mod.directive('infiniteScroll', [
         };
         scope.$watch('infiniteScrollUseDocumentBottom', handleInfiniteScrollUseDocumentBottom);
         handleInfiniteScrollUseDocumentBottom(scope.infiniteScrollUseDocumentBottom);
+        handleInfiniteScrollRelativeContainer = function(v) {
+          return relativeContainer = v;
+        };
+        scope.$watch('infiniteScrollRelativeContainer', handleInfiniteScrollRelativeContainer);
+        handleInfiniteScrollRelativeContainer(scope.infiniteScrollRelativeContainer);
         changeContainer = function(newContainer) {
           if (container != null) {
             container.unbind('scroll', handler);
